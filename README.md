@@ -1,2 +1,2 @@
-# explicit_wall_models
+# explicit-wall-models
 Derivation of explicit wall models.
