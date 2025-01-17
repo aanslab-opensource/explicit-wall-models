@@ -1,0 +1,7 @@
+scipy
+numpy
+scikit-learn
+PyQt5
+matplotlib
+h5py
+tqdm
