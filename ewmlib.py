@@ -73,7 +73,9 @@ def global_extract_opti_coeffs(results):
 
     return fields
 
+
 #######################################################################################################################
+
 
 def opti_global_eqode():
     
@@ -125,6 +127,7 @@ def opti_global_eqode():
 
     return kappa, B, Aplus, yp_ref, results, bounds
 
+
 def opti_global_reichardt_fixedB1B2():
 
     bounds = [
@@ -144,7 +147,7 @@ def opti_global_reichardt_fixedB1B2():
         indexing='ij'
         )
     
-    yp_REF = np.logspace(-2, 4, 500)
+    yp_ref = np.logspace(-2, 4, 500)
     
     results = np.empty_like(kappa, dtype=object)
     
@@ -154,9 +157,9 @@ def opti_global_reichardt_fixedB1B2():
                     
         B[idx] = C[idx] + (np.log(kappa[idx]) / kappa[idx])
     
-        up_REF  = laws.up_Reichardt(yp_REF, kappa[idx], B1, B2, C[idx])
+        up_REF  = laws.up_Reichardt(yp_ref, kappa[idx], B1, B2, C[idx])
 
-        rey_REF = up_REF * yp_REF
+        rey_REF = up_REF * yp_ref
 
         result = optimize.shgo(
             func=ewmlib.objfun_pwrel,
@@ -174,7 +177,8 @@ def opti_global_reichardt_fixedB1B2():
         
         results[idx] = result
     
-    return kappa, B, C, B1, B2, yp_REF, results, bounds
+    return kappa, B, C, B1, B2, yp_ref, results, bounds
+
 
 def opti_global_spalding():
 
@@ -220,7 +224,9 @@ def opti_global_spalding():
         
     return kappa, B, up_ref, results, bounds
 
+
 #######################################################################################################################
+
 
 def opti_fixedpms_eqode(mode):
     

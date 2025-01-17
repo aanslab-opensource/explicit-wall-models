@@ -5,9 +5,9 @@ import ewmlib
 from sklearn import linear_model
 import pickle
 
-bool_eqode = True
+bool_eqode = False
 bool_reichardtB1B2 = True
-bool_spalding = True
+bool_spalding = False
 
 if __name__ == "__main__":
     
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         print('\nReichardt fixed B1 B2:')
 
         print('0 - optimization')
-        kappa, B, C, B1, B2, yp_REF, results, bounds = ewmlib.opti_global_reichardt_fixedB1B2()
+        kappa, B, C, B1, B2, yp_ref, results, bounds = ewmlib.opti_global_reichardt_fixedB1B2()
 
         print('1 - extract each optimized coefficient')
         fields = ewmlib.global_extract_opti_coeffs(results)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 'B_test':B_test,
                 'C':C,
                 'C_test':C_test,
-                'B1':B,
+                'B1':B1,
                 'B2':B2,
                 'yp_ref':yp_ref,
                 'results':results,
