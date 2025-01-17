@@ -11,6 +11,8 @@ bool_spalding = True
 
 if __name__ == "__main__":
     
+    os.makedirs("./results", exist_ok=True)
+    
     if bool_eqode==True: # EqODE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         print('\nEqODE:')
@@ -44,8 +46,6 @@ if __name__ == "__main__":
                 )
 
         print('4 - save results')
-        
-        os.makedirs("./results", exist_ok=True)
         with open("./results/global_eqode.pkl", "wb") as file:
             pickle.dump({
                 'bounds':bounds,
@@ -89,8 +89,6 @@ if __name__ == "__main__":
         B_test = C_test + (np.log(kappa_test) / kappa_test)
 
         print('4 - save results')
-        
-        os.makedirs("./results", exist_ok=True)
         with open("./results/global_reichardt-fixedB1B2.pkl", "wb") as file:
             pickle.dump({
                 'bounds':bounds,
@@ -146,7 +144,6 @@ if __name__ == "__main__":
             )
 
         print('4 - save results')
-        os.makedirs("./results", exist_ok=True)
         with open("./results/global_spalding.pkl", "wb") as file:
             pickle.dump({
                 'bounds':bounds,

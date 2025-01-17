@@ -73,6 +73,8 @@ def global_extract_opti_coeffs(results):
 
     return fields
 
+#######################################################################################################################
+
 def opti_global_eqode():
     
     bounds = [
@@ -122,7 +124,6 @@ def opti_global_eqode():
         results[idx] = result
 
     return kappa, B, Aplus, yp_ref, results, bounds
-
 
 def opti_global_reichardt_fixedB1B2():
 
@@ -175,7 +176,6 @@ def opti_global_reichardt_fixedB1B2():
     
     return kappa, B, C, B1, B2, yp_REF, results, bounds
 
-
 def opti_global_spalding():
 
     bounds = [
@@ -220,11 +220,23 @@ def opti_global_spalding():
         
     return kappa, B, up_ref, results, bounds
 
-
 #######################################################################################################################
 
-
-def opti_fixedpms_eqode(delta_model, objective_function, bounds, mode):
+def opti_fixedpms_eqode(mode):
+    
+    bounds = [
+        (-2, 5),   # mu1
+        (0, 4),    # sigma1
+        (-10, 10), # scale1
+        (-2, 5),   # mu2
+        (0, 4),    # sigma2
+        (-10, 10), # scale2
+        (-2, 5),   # mu3
+        (0, 4),    # sigma3
+        (-10, 10), # scale3
+        (1, 2.0),  # p
+        (10, 400)  # s
+        ]
     
     if mode=="highre": # High-re constants
         kappa = 0.387
@@ -248,10 +260,10 @@ def opti_fixedpms_eqode(delta_model, objective_function, bounds, mode):
     rey_eqode = up_eqode * yp_ref
     
     results = differential_evolution(
-                func=objective_function,
+                func=ewmlib.objfun_pwrel,
                 strategy='best1bin',
                 bounds=bounds,
-                args=(rey_eqode, up_eqode, kappa, B, delta_model),
+                args=(rey_eqode, up_eqode, kappa, B, ewmlib.model3),
                 workers=32,
                 tol=1e-6,
                 maxiter=2000,
@@ -262,10 +274,24 @@ def opti_fixedpms_eqode(delta_model, objective_function, bounds, mode):
     
     print(results)
 
-    return kappa, B, Aplus, results, yp_ref
+    return kappa, B, Aplus, yp_ref, results
     
 
-def opti_fixedpms_reichardt_fixedB1B2(delta_model, objective_function, bounds, mode):
+def opti_fixedpms_reichardt_fixedB1B2(mode):
+    
+    bounds = [
+        (-1, 5),  # mu1
+        (0, 4),   # sigma1
+        (-1, 1),  # scale1
+        (0, 5),   # mu2
+        (0, 4),   # sigma2
+        (-1, 1),  # scale2
+        (2, 5),   # mu3
+        (0, 4),   # sigma3
+        (-1, 1),  # scale3
+        (1, 2.0), # p
+        (10, 400) # s
+        ]
 
     if mode=="highre": # High-re constants
         kappa = 0.387
@@ -283,15 +309,15 @@ def opti_fixedpms_reichardt_fixedB1B2(delta_model, objective_function, bounds, m
 
     yp_ref = np.logspace(-1, 4.5, 1000)
 
-    up_rh  = laws.up_Reichardt(yp_ref, kappa, B1, B2, C)
+    up_ref  = laws.up_Reichardt(yp_ref, kappa, B1, B2, C)
 
-    rey_rh = up_rh * yp_ref
+    rey_ref = up_ref * yp_ref
 
     results = differential_evolution(
-        func=objective_function,
+        func=ewmlib.objfun_pwrel,
         strategy='best1bin',
         bounds=bounds,
-        args=(rey_rh, up_rh, kappa, B, delta_model),
+        args=(rey_ref, up_ref, kappa, B, ewmlib.model3),
         workers=32,
         maxiter=2000,
         popsize=150,
@@ -303,10 +329,24 @@ def opti_fixedpms_reichardt_fixedB1B2(delta_model, objective_function, bounds, m
     
     print(results)
     
-    return kappa, B, C, B1, B2, results, yp_ref, up_rh
+    return kappa, B, C, B1, B2, yp_ref, results
 
 
-def opti_fixedpms_spalding(delta_model, objective_function, bounds, mode):
+def opti_fixedpms_spalding(mode):
+
+    bounds = [
+        (-2, 5),   # mu1
+        (0, 4),    # sigma1
+        (-10, 10), # scale1
+        (-2, 5),   # mu2
+        (0, 4),    # sigma2
+        (-10, 10), # scale2
+        (-2, 5),   # mu3
+        (0, 4),    # sigma3
+        (-10, 10), # scale3
+        (1, 2.0),  # p
+        (10, 400)  # s
+        ]
 
     if mode=="highre": # High-re constants
         kappa = 0.387
@@ -324,10 +364,10 @@ def opti_fixedpms_spalding(delta_model, objective_function, bounds, mode):
     rey_spalding = up_ref * yp_ref
 
     results = differential_evolution(
-        func=objective_function,
+        func=ewmlib.objfun_pwrel,
         strategy='best1bin',
         bounds=bounds,
-        args=(rey_spalding, up_ref, kappa, B, delta_model),
+        args=(rey_spalding, up_ref, kappa, B, ewmlib.model3),
         workers=10,
         tol=1e-6,
         maxiter=2000,
@@ -338,4 +378,4 @@ def opti_fixedpms_spalding(delta_model, objective_function, bounds, mode):
     
     print(results)
 
-    return kappa, B, results, up_ref, yp_ref
+    return kappa, B, up_ref, results
