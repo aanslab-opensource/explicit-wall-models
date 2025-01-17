@@ -81,7 +81,7 @@ ax.set_xlabel(r'$Re_y$')
 ax.set_xlabel(r'$Re_y$')
 ax.set_ylabel(r"$\mathbf{err}^1_{\mathbf{\Psi}_{Sp}}$, \%")
 ax.set_xlim(1e-4, 1e+6)
-ax.set_ylim(-0.78, 0.52)
+ax.set_ylim(-0.77, 0.52)  
 ax.legend()
 
 plt.tight_layout()
