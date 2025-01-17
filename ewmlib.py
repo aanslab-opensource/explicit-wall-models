@@ -3,6 +3,9 @@ from scipy.special import lambertw
 from scipy.integrate import quad
 from scipy.optimize import differential_evolution
 import scipy.optimize as optimize
+from tqdm import tqdm
+import ewmlib
+
 
 
 def objfun_pwrel(params, rey, up_ref, kappa, B, delta_model):
@@ -51,41 +54,61 @@ class laws:
     def up_CaiSagaut_m2_var(Rey, kappa, B, p, s):
         return laws.up_CaiSagaut_m2(Rey, kappa, np.exp(kappa*B), p, s)
 
+
 #######################################################################################################################
 
-def opti_global_eqode(delta_model, objective_function, bounds):
+def global_extract_opti_coeffs(results):
+
+    fields = {}
+
+    for key in ['mu1','sigma1','scale1','p','s','success']: 
+        fields.update({key:np.zeros_like(results)})
+
+    for key_idx, key in enumerate(fields):
+        for idx, _ in np.ndenumerate(results):
+            if key != 'success':
+                fields[key][idx] = results[idx].x[key_idx]
+            else:
+                fields['success'][idx] = results[idx].success
+
+    return fields
+
+def opti_global_eqode():
     
+    bounds = [
+        (2.43,  3.13),  # mu1
+        (0.48,  0.66),  # sigma1
+        (0.018, 0.064), # scale1
+        (1.22,  1.26),  # p
+        (76,    114)    # s
+        ]
+
     kappa, Aplus = np.meshgrid(
         np.linspace(0.38, 0.42, 20),
         np.linspace(  15,   19, 20),
         indexing='ij'
         )
-    
-    yp_REF = np.logspace(-1, 4, 500)
-    
-    results = np.empty_like(kappa, dtype=object)
-    
-    B = np.zeros_like(kappa, dtype=np.float64)
-    
-    yp_LOG = np.linspace(5000, 35000, 100)
 
-    progress = 0
-    
-    kappa_size = kappa.size
-    
-    for idx, _ in np.ndenumerate(kappa):
-        progress += 1
+    yp_ref = np.logspace(-1, 4, 500)
+
+    results = np.empty_like(kappa, dtype=object)
+
+    B = np.zeros_like(kappa, dtype=np.float64)
+
+    yp_LOG = np.linspace(5000, 35000, 100)
+                
+    for idx, _ in tqdm(np.ndenumerate(kappa), total=kappa.size):
         
         B[idx] = np.mean(laws.up_ODE(yp_LOG, kappa[idx], Aplus[idx]) - (1 / kappa[idx]) * np.log(yp_LOG))
         
-        up_REF = laws.up_ODE(yp_REF, kappa[idx], Aplus[idx])
+        up_REF = laws.up_ODE(yp_ref, kappa[idx], Aplus[idx])
         
-        rey_REF = up_REF * yp_REF
+        rey_REF = up_REF * yp_ref
 
         result = optimize.shgo(
-            func=objective_function,
+            func=ewmlib.objfun_pwrel,
             bounds=bounds,
-            args=(rey_REF, up_REF, kappa[idx], B[idx], delta_model),
+            args=(rey_REF, up_REF, kappa[idx], B[idx], ewmlib.model1),
             constraints=None,
             n=200,
             iters=1,
@@ -95,18 +118,22 @@ def opti_global_eqode(delta_model, objective_function, bounds):
             sampling_method='simplicial', #'halton' 'sobol'
             workers=1
             )
-
-        print(f'fun={result.fun:.3e}  residuals={np.round(result.x, 2)}')
         
         results[idx] = result
 
-        print(f'{progress} / {kappa_size}', end='\r')
-
-    return kappa, B, Aplus, results, yp_REF
+    return kappa, B, Aplus, yp_ref, results, bounds
 
 
-def opti_global_reichardt_fixedB1B2(delta_model, objective_function, bounds):
-    
+def opti_global_reichardt_fixedB1B2():
+
+    bounds = [
+        (2,     2.4),  # mu1
+        (0.76,  0.83), # sigma1
+        (0.076, 0.13), # scale1
+        (1.24,  1.25), # p
+        (112,   133)   # s
+        ]
+
     B1 = 11
     B2 = 3
     
@@ -121,13 +148,8 @@ def opti_global_reichardt_fixedB1B2(delta_model, objective_function, bounds):
     results = np.empty_like(kappa, dtype=object)
     
     B = np.zeros_like(kappa, dtype=np.float64)
-
-    progress = 0
-    
-    kappa_size = kappa.size
-    
-    for idx, _ in np.ndenumerate(kappa):
-        progress += 1
+        
+    for idx, _ in tqdm(np.ndenumerate(kappa), total=kappa.size):
                     
         B[idx] = C[idx] + (np.log(kappa[idx]) / kappa[idx])
     
@@ -136,9 +158,9 @@ def opti_global_reichardt_fixedB1B2(delta_model, objective_function, bounds):
         rey_REF = up_REF * yp_REF
 
         result = optimize.shgo(
-            func=objective_function,
+            func=ewmlib.objfun_pwrel,
             bounds=bounds,
-            args=(rey_REF, up_REF, kappa[idx], B[idx], delta_model),
+            args=(rey_REF, up_REF, kappa[idx], B[idx], ewmlib.model1),
             constraints=None,
             n=200,
             iters=1,
@@ -149,42 +171,41 @@ def opti_global_reichardt_fixedB1B2(delta_model, objective_function, bounds):
             workers=1
             )
         
-        print(f'fun={result.fun:.3e}  residuals={np.round(result.x, 2)}')
-        
         results[idx] = result
-                
-        print(f'{progress} / {kappa_size}', end='\r')
     
-    return kappa, B, C, results, yp_REF
+    return kappa, B, C, B1, B2, yp_REF, results, bounds
 
 
-def opti_global_spalding(delta_model, objective_function, bounds):
-    
+def opti_global_spalding():
+
+    bounds = [
+        (1.91,  2.08),  # mu1
+        (1.2,   1.33),  # sigma1
+        (0.195, 0.275), # scale1
+        (1.25,  1.29),  # p
+        (217,   378)    # s
+        ]
+
     kappa, B = np.meshgrid(
         np.linspace(0.38, 0.42, 20),
         np.linspace(4.20, 5.50, 20), 
         indexing='ij'
         )
     
-    up_REF = np.logspace(-1, np.log10(50), 500)
+    up_ref = np.logspace(-1, np.log10(50), 500)
     
-    results = np.empty_like(kappa, dtype=object)
-
-    progress = 0
+    results = np.empty_like(kappa, dtype=object)    
     
-    kappa_size = kappa.size
-    
-    for idx, _ in np.ndenumerate(kappa):
-        progress += 1
+    for idx, _ in tqdm(np.ndenumerate(kappa), total=kappa.size):
                 
-        yp_REF = laws.yp_Spalding(up_REF, kappa[idx], B[idx])
+        yp_REF = laws.yp_Spalding(up_ref, kappa[idx], B[idx])
         
-        rey_REF = up_REF * yp_REF
+        rey_REF = up_ref * yp_REF
 
         result = optimize.shgo(
-            func=objective_function,
+            func=ewmlib.objfun_pwrel,
             bounds=bounds,
-            args=(rey_REF, up_REF, kappa[idx], B[idx], delta_model),
+            args=(rey_REF, up_ref, kappa[idx], B[idx], ewmlib.model1),
             constraints=None,
             n=200,
             iters=1,
@@ -195,15 +216,13 @@ def opti_global_spalding(delta_model, objective_function, bounds):
             workers=1
             )
         
-        print(f'fun={result.fun:.3e}  residuals={np.round(result.x, 2)}')
-        
         results[idx] = result
-
-        print(f'{progress} / {kappa_size}', end='\r')
         
-    return kappa, B, results, up_REF
+    return kappa, B, up_ref, results, bounds
+
 
 #######################################################################################################################
+
 
 def opti_fixedpms_eqode(delta_model, objective_function, bounds, mode):
     
