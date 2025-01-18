@@ -8,7 +8,9 @@ venv*/
 *.csv
 *.pkl
 *.bkup
-# optimization_results/
+!figures/global_eqode.pdf
+!figures/global_reichardt-fixedB1B2.pdf
+!figures/global_spalding.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
