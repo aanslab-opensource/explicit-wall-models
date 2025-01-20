@@ -5,15 +5,15 @@ import ewmlib
 from sklearn import linear_model
 import pickle
 
-bool_eqode = False
-bool_reichardtB1B2 = True
+bool_eqode = True
+bool_reichardtB1B2 = False
 bool_spalding = False
 
 if __name__ == "__main__":
     
     os.makedirs("./results", exist_ok=True)
     
-    if bool_eqode==True: # EqODE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    if bool_eqode: # EqODE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         print('\nEqODE:')
 
@@ -61,7 +61,8 @@ if __name__ == "__main__":
                 'fields_regs':fields_regs,
                 }, file)
 
-    if bool_reichardtB1B2==True: # Reichardt fixed B1 B2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    if bool_reichardtB1B2: # Reichardt fixed B1 B2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         print('\nReichardt fixed B1 B2:')
 
@@ -106,7 +107,8 @@ if __name__ == "__main__":
                 'fields_regs':fields_regs,
                 }, file)
 
-    if bool_spalding==True: # Spalding <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    if bool_spalding: # Spalding <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         print('\nSpalding:')
 

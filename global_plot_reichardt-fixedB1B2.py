@@ -48,6 +48,9 @@ print('1 - plot data')
 
 fig, ax = plt.subplots(1, 1, figsize=(0.8*8.3, 2.5))
 
+
+print('   1.0 - optimal grid')
+# error on optimal points
 error_values = []
 for idx, _ in np.ndenumerate(kappa):
     up_rh = ewmlib.laws.up_Reichardt(yp_ref, kappa[idx], B1, B2, C[idx])
@@ -55,50 +58,50 @@ for idx, _ in np.ndenumerate(kappa):
     up_caisag = ewmlib.laws.up_CaiSagaut_m2_var(rey_rh, kappa[idx], B[idx], fields['p'][idx], fields['s'][idx])
     up_delta = ewmlib.model1(np.log10(rey_rh), *results[idx].x[:-2])
     error_values.append(100 * (up_rh - (up_caisag + up_delta)) / up_rh)
-    
 error_values = np.vstack(error_values)
 e_min = error_values.min(axis=0)
 e_max = error_values.max(axis=0)
 ax.fill_between(rey_rh, e_min, e_max, color='k', alpha=1, label=r'$\mathbf{\tilde{\Pi}}_1(\mathbf{\Psi}_{Rh})$')
-ax.set_xscale('log')
 
+
+print('   1.1 - test grid')
+# error on test grid
+yp_ref = np.logspace(-2, 5, 1000)
 error_interp = []
 error_exterp = []
-
-yp_ref = np.logspace(-2, 5, 1000)
-
 for idx_test, _ in np.ndenumerate(kappa_test):
     up_rh = ewmlib.laws.up_Reichardt(yp_ref, kappa_test[idx_test], B1, B2, C_test[idx_test])
     rey_rh = up_rh * yp_ref
     pms_regs = []
     for key_id, key in enumerate(list(fields.keys())[:-1]):
         pms_regs.append(fields_regs[key].predict([(kappa_test[idx_test], C_test[idx_test])]))
-
     up_caisag_reg = ewmlib.laws.up_CaiSagaut_m2_var(rey_rh, kappa_test[idx_test], B_test[idx_test], *pms_regs[-2:])
     up_delta_reg = ewmlib.model1(np.log10(rey_rh), *pms_regs[:-2])
     if kappa_test[idx_test] <= 0.39:
         error_interp.append(100 * (up_rh - (up_caisag_reg + up_delta_reg)) / up_rh)
     else:
         error_exterp.append(100 * (up_rh - (up_caisag_reg + up_delta_reg)) / up_rh)
-        
 error_interp = np.vstack(error_interp)
 error_exterp = np.vstack(error_exterp)       
 
 e_min = error_exterp.min(axis=0)
 e_max = error_exterp.max(axis=0)
 ax.fill_between(rey_rh, e_min, e_max, color='C5', alpha=0.75, label=r'$\tilde{\pi}_{Rh, 1}(\mathbf{\Psi}_{Rh})$, $\mathrm{extrapolation}$')
-ax.set_xscale('log')
 
 e_min = error_interp.min(axis=0)
 e_max = error_interp.max(axis=0)
 ax.fill_between(rey_rh, e_min, e_max, color='C4', alpha=0.75, label=r'$\tilde{\pi}_{Rh, 1}(\mathbf{\Psi}_{Rh})$, $\mathrm{interpolation}$')
+
 ax.set_xscale('log')
 
 ax.set_xlabel(r'$Re_y$')
 ax.set_ylabel(r"$\mathbf{err}^1_{\mathbf{\Psi}_{Rh}}$, \%")
+
 ax.set_xlim(1e-4, 1e+6)
 ax.set_ylim(-0.5, 0.2)
+
 ax.set_yticks([-0.5, -0.4, -0.2, 0, 0.2])
+
 ax.legend(loc=4)
 
 plt.tight_layout()
