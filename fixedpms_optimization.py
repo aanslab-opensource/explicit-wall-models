@@ -8,7 +8,7 @@ if __name__ == "__main__":
     os.makedirs("./results", exist_ok=True)
     
     # EqODE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    if False:
+    if True:
         print('\nEqODE (classical)')
         
         kappa, B, Aplus, yp_ref, results = ewmlib.opti_fixedpms_eqode("classical")
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     # Spalding <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    if False:
+    if True:
         print('\nSpalding (classical)')
 
         kappa, B, up_ref, results = ewmlib.opti_fixedpms_spalding("classical")
