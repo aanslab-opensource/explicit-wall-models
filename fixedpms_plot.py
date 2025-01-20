@@ -15,9 +15,9 @@ laws = ['eqode','reichardt-fixedB1B2','spalding']
 
 labels=["$l=Sp$", "$l=Rh$", "$l=Eq$"]
 
-titles=[r"$\mathrm{High\ Reynolds\ number}$", r"$\mathrm{Classical}$"]
+titles=[r"$\mathrm{High\ Reynolds\ Number}$", r"$\mathrm{Classical}$"]
 
-fig, axs = plt.subplots(2, 1, figsize= (0.8*8.3, 3), sharex=True)
+fig, axs = plt.subplots(2, 1, figsize= (0.8*8.3, 4), sharex=True)
 
 for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
     for idx_law, law in enumerate(laws):
@@ -27,21 +27,18 @@ for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
             
         file.close()
         
+        kappa = data['kappa']
+        B = data['B']
+
         match law:
             case 'eqode':
                 yp = np.logspace(-4, 6, 1000)
-                kappa = data['kappa']
-                B = data['B']
                 up = ewmlib.laws.up_ODE(yp, kappa, data['Aplus'])
             case 'reichardt-fixedB1B2':
                 yp = np.logspace(-4, 6, 1000)
-                kappa = data['kappa']
-                B = data['B']
                 up = ewmlib.laws.up_Reichardt(yp, kappa, 11, 3, data['C'])
             case 'spalding':
                 up = np.linspace(1e-2, 35, 1000)
-                kappa = data['kappa']
-                B = data['B']
                 yp = ewmlib.laws.yp_Spalding(up, kappa, B)
                 
         rey = yp*up
@@ -57,21 +54,25 @@ for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
         up_fit = up_caisag + up_delta
         
         axs[idx_typecoeffs].semilogx(rey, 100* (up - up_fit) / up, f'C{idx_law+4}', label=labels[idx_law])
-        axs[idx_typecoeffs].set_title(titles[idx_typecoeffs])
+        # axs[idx_typecoeffs].set_title(titles[idx_typecoeffs])
 
     axs[idx_typecoeffs].set_ylabel(r"$\mathbf{err}^3_{\mathbf{\Psi}_{l}}$, \%")
 
     if idx_typecoeffs == 0:
-        axs[idx_typecoeffs].legend()
+        axs[idx_typecoeffs].legend(loc='upper center', bbox_to_anchor=(0.5, 1.3), ncol=3)
     else:
-        axs[idx_typecoeffs].set_xlabel(r"$Re_y$")
+        axs[idx_typecoeffs].set_xlabel(r"$Re_y$")        
+        
+    axs[idx_typecoeffs].text(1.5e-4, 0.035, titles[idx_typecoeffs], size=10, rotation=0.,
+         ha="left", va="bottom",
+         bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5), fc=(1., 0.8, 0.8),))
         
     axs[idx_typecoeffs].set_xlim(1e-4, 1e+6)
     axs[idx_typecoeffs].set_ylim(-5e-2, 5e-2)
 
 plt.tight_layout()
 
-plt.show()
+# plt.show()
 
 os.makedirs("./figures", exist_ok=True)
 plt.savefig("./figures/fixedpms.pdf", bbox_inches='tight', pad_inches=0.02)
