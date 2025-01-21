@@ -11,6 +11,8 @@ venv*/
 !figures/global_eqode.pdf
 !figures/global_reichardt-fixedB1B2.pdf
 !figures/global_spalding.pdf
+!tables/fixedpms_highre.csv
+!tables/fixedpms_classical.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
