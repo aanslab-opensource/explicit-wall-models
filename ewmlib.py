@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.special import lambertw
 from scipy.integrate import quad
-from scipy.optimize import differential_evolution
 import scipy.optimize as optimize
 from tqdm import tqdm
 import ewmlib
@@ -13,13 +12,16 @@ def objfun_pwrel(params, rey, up_ref, kappa, B, delta_model):
     pwrelerr = (up_ref - (delta_model(np.log10(rey), *params[:-2]) + up_cs)) / up_cs
     return np.sum(pwrelerr ** 2)
 
+
 def model1(log10rey, mu, sigma, scale):
     return scale*np.exp(-np.square((log10rey - mu)*sigma))
+
 
 def model3(log10rey, mu1, sigma1, scale1, mu2, sigma2, scale2, mu3, sigma3, scale3,):
     return (scale1 * np.exp( -np.square( (log10rey - mu1) * sigma1) ) + 
             scale2 * np.exp( -np.square( (log10rey - mu2) * sigma2) ) +
             scale3 * np.exp( -np.square( (log10rey - mu3) * sigma3) ) )
+
 
 class laws:
     @staticmethod
@@ -56,6 +58,7 @@ class laws:
 
 
 #######################################################################################################################
+
 
 def global_extract_opti_coeffs(results):
 
@@ -227,29 +230,51 @@ def opti_global_spalding():
 
 #######################################################################################################################
 
+shgokwargs = {
+    "constraints":None,
+    "n":200,
+    "iters":1,
+    "callback":None, 
+    "minimizer_kwargs":None, 
+    "options":None, 
+    "sampling_method":'simplicial', # 'halton' 'sobol'
+    "workers":1
+}
 
 def opti_fixedpms_eqode(mode):
-    
-    bounds = [
-        (-2, 5),   # mu1
-        (0, 4),    # sigma1
-        (-10, 10), # scale1
-        (-2, 5),   # mu2
-        (0, 4),    # sigma2
-        (-10, 10), # scale2
-        (-2, 5),   # mu3
-        (0, 4),    # sigma3
-        (-10, 10), # scale3
-        (1, 2.0),  # p
-        (10, 400)  # s
-        ]
-    
-    if mode=="highre": # High-re constants
-        kappa = 0.387
-        Aplus = 15.2516
-    elif mode=="classical": # Classical constants    
+
+    if mode=="classical": # Classical constants    
         kappa = 0.41
         Aplus = 17
+        bounds = [
+            (2.5, 3.0),     # mu1
+            (1.1, 1.2),     # sigma1
+            (0.04, 0.06),   # scale1
+            (2.5, 3.0),     # mu2
+            (3.0, 3.5),     # sigma2
+            (0.1, 0.2),     # scale2
+            (2.5, 2.6),     # mu3
+            (0.5, 0.7),     # sigma3
+            (0.01, 0.02),   # scale3
+            (1.0, 1.5),     # p
+            (240.0, 250.0), # s
+        ]
+    elif mode=="highre": # High-re constants
+        kappa = 0.387
+        Aplus = 15.2516
+        bounds = [
+            (2.5, 3.0),     # mu1
+            (2.5, 3.0),     # sigma1
+            (0.1, 0.2),     # scale1
+            (3.0, 3.5),     # mu2
+            (0.5, 0.6),     # sigma2
+            (0.05, 0.06),   # scale2
+            (4.0, 4.2),     # mu3
+            (0.9, 1.0),     # sigma3
+            (-0.1, 0.0),    # scale3
+            (1.1, 1.2),     # p
+            (210.0, 220.0), # s
+        ]
     else:
         exit("ERROR: no constant type specified")
   
@@ -264,19 +289,20 @@ def opti_fixedpms_eqode(mode):
     up_eqode = laws.up_ODE(yp_ref, kappa, Aplus)
     
     rey_eqode = up_eqode * yp_ref
-    
-    results = differential_evolution(
-                func=ewmlib.objfun_pwrel,
-                strategy='best1bin',
-                bounds=bounds,
-                args=(rey_eqode, up_eqode, kappa, B, ewmlib.model3),
-                workers=32,
-                tol=1e-6,
-                maxiter=2000,
-                popsize=100,
-                polish=True,
-                updating='deferred'
-                )
+        
+    results = optimize.shgo(
+        func=ewmlib.objfun_pwrel,
+        bounds=bounds,
+        args=(rey_eqode, up_eqode, kappa, B, ewmlib.model3),
+        constraints=shgokwargs['constraints'],
+        n=shgokwargs['n'],
+        iters=shgokwargs['iters'],
+        workers=shgokwargs['workers'],
+        callback=shgokwargs['callback'], 
+        minimizer_kwargs=shgokwargs['minimizer_kwargs'], 
+        options=shgokwargs['options'], 
+        sampling_method=shgokwargs['sampling_method']
+        )
     
     print(results)
 
@@ -285,28 +311,40 @@ def opti_fixedpms_eqode(mode):
 
 def opti_fixedpms_reichardt_fixedB1B2(mode):
     
-    bounds = [
-        (-1, 5),  # mu1
-        (0, 4),   # sigma1
-        (-1, 1),  # scale1
-        (0, 5),   # mu2
-        (0, 4),   # sigma2
-        (-1, 1),  # scale2
-        (2, 5),   # mu3
-        (0, 4),   # sigma3
-        (-1, 1),  # scale3
-        (1, 2.0), # p
-        (10, 400) # s
-        ]
-
-    if mode=="highre": # High-re constants
-        kappa = 0.387
-        B = 4.21
-        C = B - (np.log(kappa) / kappa)
-    elif mode=="classical": # Classical constants    
+    if mode=="classical": # Classical constants    
         kappa = 0.41
         C = 7.8
         B = C + np.log(kappa) / kappa
+        bounds = [
+            (2.0, 2.5),  # mu1
+            (0.5, 1.0),  # sigma1
+            (-0.1, 0.1), # scale1
+            (2.0, 2.5),  # mu2
+            (1.5, 2.0),  # sigma2
+            (-0.1, 0.1), # scale2
+            (3.5, 4.0),  # mu3
+            (1.5, 2.0),  # sigma3
+            (-0.1, 0.1), # scale3
+            (1.0, 1.5),  # p
+            (100, 150),  # s
+            ]
+    elif mode=="highre": # High-re constants
+        kappa = 0.387
+        B = 4.21
+        C = B - (np.log(kappa) / kappa)
+        bounds = [
+            (1.0, 1.5),   # mu1
+            (0.0, 1.0),   # sigma1
+            (-0.05, 0.0), # scale1
+            (2.0, 2.5),   # mu2
+            (2.0, 2.5),   # sigma2
+            (0.1, 0.2),   # scale2
+            (2.0, 2.5),   # mu3
+            (0.5, 1.0),   # sigma3
+            (0.05, 0.1),  # scale3
+            (1.0, 1.5),   # p
+            (100, 150),   # s
+            ]
     else:
         exit("ERROR: no constant type specified")
 
@@ -318,20 +356,20 @@ def opti_fixedpms_reichardt_fixedB1B2(mode):
     up_ref  = laws.up_Reichardt(yp_ref, kappa, B1, B2, C)
 
     rey_ref = up_ref * yp_ref
-
-    results = differential_evolution(
+    
+    results = optimize.shgo(
         func=ewmlib.objfun_pwrel,
-        strategy='best1bin',
         bounds=bounds,
         args=(rey_ref, up_ref, kappa, B, ewmlib.model3),
-        workers=32,
-        maxiter=2000,
-        popsize=150,
-        tol=1e-5,
-        atol=1e-5,
-        polish=True,
-        updating='deferred'
-    )
+        constraints=shgokwargs['constraints'],
+        n=shgokwargs['n'],
+        iters=shgokwargs['iters'],
+        callback=shgokwargs['callback'], 
+        minimizer_kwargs=shgokwargs['minimizer_kwargs'], 
+        options=shgokwargs['options'], 
+        sampling_method=shgokwargs['sampling_method'],
+        workers=shgokwargs['workers']
+        )
     
     print(results)
     
@@ -340,26 +378,38 @@ def opti_fixedpms_reichardt_fixedB1B2(mode):
 
 def opti_fixedpms_spalding(mode):
 
-    bounds = [
-        (-2, 5),   # mu1
-        (0, 4),    # sigma1
-        (-10, 10), # scale1
-        (-2, 5),   # mu2
-        (0, 4),    # sigma2
-        (-10, 10), # scale2
-        (-2, 5),   # mu3
-        (0, 4),    # sigma3
-        (-10, 10), # scale3
-        (1, 2.0),  # p
-        (10, 400)  # s
-        ]
-
-    if mode=="highre": # High-re constants
-        kappa = 0.387
-        B = 4.21
-    elif mode=="classical": # Classical constants    
+    if mode=="classical": # Classical constants    
         kappa = 0.4
         B = 5.5
+        bounds = [
+            (3.0, 3.1),   # mu1
+            (2.8, 2.9),   # sigma1
+            (0.28, 0.3),  # scale1
+            (2.5, 2.6),   # mu2
+            (0.9, 1.0),   # sigma2
+            (-0.2, -0.1), # scale2
+            (2.6, 2.7),   # mu3
+            (1.8, 1.9),   # sigma3
+            (-1.3, -1.2), # scale3
+            (1.14, 1.15), # p
+            (350, 400),   # s
+            ]
+    elif mode=="highre": # High-re constants
+        kappa = 0.387
+        B = 4.21
+        bounds = [
+            (3.0, 3.2),   # mu1
+            (2.3, 2.4),   # sigma1
+            (-0.1, 0.0),  # scale1
+            (2.3, 2.4),   # mu2
+            (2.2, 2.3),   # sigma2
+            (-0.4, -0.3), # scale2
+            (2.9, 3.0),   # mu3
+            (0.5, 0.6),   # sigma3
+            (0.02, 0.03), # scale3
+            (1.0, 1.5),   # p
+            (200, 210),   # s
+            ]
     else:
         exit("ERROR: no constant type specified")
     
@@ -369,19 +419,21 @@ def opti_fixedpms_spalding(mode):
     
     rey_spalding = up_ref * yp_ref
 
-    results = differential_evolution(
+    results = optimize.shgo(
         func=ewmlib.objfun_pwrel,
-        strategy='best1bin',
         bounds=bounds,
         args=(rey_spalding, up_ref, kappa, B, ewmlib.model3),
-        workers=10,
-        tol=1e-6,
-        maxiter=2000,
-        popsize=100,
-        polish=True,
-        updating='deferred'
+        constraints=shgokwargs['constraints'],
+        n=shgokwargs['n'],
+        iters=shgokwargs['iters'],
+        callback=shgokwargs['callback'], 
+        minimizer_kwargs=shgokwargs['minimizer_kwargs'], 
+        options=shgokwargs['options'], 
+        sampling_method=shgokwargs['sampling_method'],
+        workers=shgokwargs['workers']
         )
     
     print(results)
 
     return kappa, B, up_ref, results
+
