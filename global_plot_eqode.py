@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import ewmlib
 import matplotlib as mpl
 import matplotlib.colors as mcolors
-from sklearn import linear_model
 import pickle
 
 

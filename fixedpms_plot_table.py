@@ -20,12 +20,14 @@ columns = ['Model', 'mu1', 'sigma1', 'xi1', 'mu2', 'sigma2', 'xi2', 'mu3', 'sigm
 laws = ["spalding", "reichardt-fixedB1B2", "eqode"]
 lawlabels=["$l=Sp$", "$l=Rh$", "$l=Eq$"]
 csv_lawlabels = ['Spalding', 'Reichardt', 'EqODE']
+csv_typelabels = ['Classical', 'High Reynolds']
 
-titles=["$\mathrm{Classical}$", "$\mathrm{High\ Reynolds\ Number}$"]
+titles=["$\mathrm{Classical}$", "$\mathrm{High\ Reynolds number}$"]
 
 fig, axs = plt.subplots(2, 1, figsize= (0.8*8.3, 4), sharex=True)
 
 for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
+    
     df = pd.DataFrame(columns=columns)
 
     rows = []
@@ -70,7 +72,7 @@ for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
     for row in rows:
         df.loc[len(df)] = row
 
-    print(f'\n{csv_lawlabels[idx_law]}')
+    print(f'\n{csv_typelabels[idx_typecoeffs]}')
     print(df)
 
     os.makedirs("./tables", exist_ok=True)
