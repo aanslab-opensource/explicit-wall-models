@@ -1,4 +1,4 @@
-# Explicit Formulations of Widely-Used Wall Models for Large-Eddy Simulation ???
+# Explicit Formulations of Widely-Used Wall Models for Large-Eddy Simulation
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14423351.svg)](https://doi.org/10.5281/zenodo.14423351)
@@ -41,11 +41,11 @@ The numerical experiments use [Python](https://www.python.org) and [OpenFOAM-v23
 To run the Python code, you need Python 3, and the packages `jupyter`, `numpy`, `scipy`, and `matplotlib`.
 The Python code has been tested with the following versions, but other versions may work:
 
-    - Python 3.13
-    - Numpy 2.1.3
-    - SciPy 1.14.1
-    - Matplotlib 3.9.2
-    - sklearn
+    - Python 3.??
+    - Numpy ??
+    - SciPy ??
+    - Matplotlib
+    - sklearn ??
 
 The results can be reproduced by running  .....
 

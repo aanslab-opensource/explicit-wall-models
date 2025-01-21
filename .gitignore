@@ -13,6 +13,7 @@ venv*/
 !figures/global_spalding.pdf
 !tables/fixedpms_highre.csv
 !tables/fixedpms_classical.csv
+!tables/global_regression_coefficients.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
