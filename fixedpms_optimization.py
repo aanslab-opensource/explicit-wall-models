@@ -10,7 +10,6 @@ if __name__ == "__main__":
     # EqODE <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     if True:
         print('\nEqODE (classical)')
-        
         kappa, B, Aplus, yp_ref, results = ewmlib.opti_fixedpms_eqode("classical")
         with open("./results/fixedpms_eqode_classical.pkl", "wb") as file:
             pickle.dump({
@@ -35,10 +34,8 @@ if __name__ == "__main__":
 
 
     # Reichardt fixed B1 B2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    
     if True:
         print('\nReichardt fixed B1 B2 (classical)')
-        
         kappa, B, C, B1, B2, yp_ref, results = ewmlib.opti_fixedpms_reichardt_fixedB1B2("classical")
         with open("./results/fixedpms_reichardt-fixedB1B2_classical.pkl", "wb") as file:
             pickle.dump({
@@ -67,7 +64,6 @@ if __name__ == "__main__":
 
 
     # Spalding <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
     if True:
         print('\nSpalding (classical)')
 

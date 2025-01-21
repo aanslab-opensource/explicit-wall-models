@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 from os.path import join
 import ewmlib
 import pickle
+import pandas as pd
+
+pd.set_option('display.float_format', '{:.4f}'.format)
+
 
 
 plt.style.use('tableau-colorblind10')
@@ -11,15 +15,21 @@ plt.rc("text", usetex=True)
 plt.rcParams.update({"font.size": 10})
 plt.rcParams.update({"axes.grid" : True, "grid.color": "#DDDDDD", "grid.linestyle" : "dashed"})
 
-laws = ['eqode','reichardt-fixedB1B2','spalding']
+columns = ['Model', 'mu1', 'sigma1', 'xi1', 'mu2', 'sigma2', 'xi2', 'mu3', 'sigma3', 'xi3', 'p', 's']
 
-labels=["$l=Sp$", "$l=Rh$", "$l=Eq$"]
+laws = ["spalding", "reichardt-fixedB1B2", "eqode"]
+lawlabels=["$l=Sp$", "$l=Rh$", "$l=Eq$"]
+csv_lawlabels = ['Spalding', 'Reichardt', 'EqODE']
 
-titles=[r"$\mathrm{High\ Reynolds\ Number}$", r"$\mathrm{Classical}$"]
+titles=["$\mathrm{Classical}$", "$\mathrm{High\ Reynolds\ Number}$"]
 
 fig, axs = plt.subplots(2, 1, figsize= (0.8*8.3, 4), sharex=True)
 
 for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
+    df = pd.DataFrame(columns=columns)
+
+    rows = []
+
     for idx_law, law in enumerate(laws):
         
         with open(f'./results/fixedpms_{law}_{typecoeffs}.pkl', 'rb') as file:
@@ -45,6 +55,8 @@ for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
         
         coeffs = data['results'].x
         
+        rows.append([csv_lawlabels[idx_law]] + list(coeffs))
+        
         pms_gauss = coeffs[:-2]
         p = coeffs[-2]
         s = coeffs[-1]
@@ -53,8 +65,17 @@ for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
         up_delta = ewmlib.model3(np.log10(rey), *pms_gauss)
         up_fit = up_caisag + up_delta
         
-        axs[idx_typecoeffs].semilogx(rey, 100* (up - up_fit) / up, f'C{idx_law+4}', label=labels[idx_law])
-        # axs[idx_typecoeffs].set_title(titles[idx_typecoeffs])
+        axs[idx_typecoeffs].semilogx(rey, 100* (up - up_fit) / up, f'C{idx_law+4}', label=lawlabels[idx_law])
+
+    for row in rows:
+        df.loc[len(df)] = row
+
+    print(f'\n{csv_lawlabels[idx_law]}')
+    print(df)
+
+    os.makedirs("./tables", exist_ok=True)
+
+    df.to_csv(f'./tables/fixedpms_{typecoeffs}.csv', index=False)
 
     axs[idx_typecoeffs].set_ylabel(r"$\mathbf{err}^3_{\mathbf{\Psi}_{l}}$, \%")
 
@@ -63,16 +84,24 @@ for idx_typecoeffs, typecoeffs in enumerate(['classical','highre']):
     else:
         axs[idx_typecoeffs].set_xlabel(r"$Re_y$")        
         
-    axs[idx_typecoeffs].text(1.5e-4, 0.035, titles[idx_typecoeffs], size=10, rotation=0.,
+    axs[idx_typecoeffs].text(1.5e-4, 0.026, titles[idx_typecoeffs], size=10, rotation=0.,
          ha="left", va="bottom",
-         bbox=dict(boxstyle="round", ec=(1., 0.5, 0.5), fc=(1., 0.8, 0.8),))
+         bbox=dict(boxstyle="round", ec='grey', fc='lightgrey',))
         
     axs[idx_typecoeffs].set_xlim(1e-4, 1e+6)
-    axs[idx_typecoeffs].set_ylim(-5e-2, 5e-2)
+    axs[idx_typecoeffs].set_ylim(-0.04, 0.04)
 
 plt.tight_layout()
 
-# plt.show()
-
 os.makedirs("./figures", exist_ok=True)
+
 plt.savefig("./figures/fixedpms.pdf", bbox_inches='tight', pad_inches=0.02)
+
+
+
+
+
+
+
+
+
