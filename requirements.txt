@@ -5,3 +5,4 @@ PyQt5
 matplotlib
 h5py
 tqdm
+pandas
