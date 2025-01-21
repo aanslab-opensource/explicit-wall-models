@@ -1,7 +1,7 @@
 # Explicit Formulations of Widely-Used Wall Models for Large-Eddy Simulation
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14423351.svg)](https://doi.org/10.5281/zenodo.14423351)
+<!-- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14423351.svg)](https://doi.org/10.???/zenodo.???) -->
 
 
 This repository contains information and code to reproduce the results presented in the article
