@@ -30,9 +30,6 @@ if __name__ == "__main__":
         fields_regs = data['fields_regs']
         results = data['results']
 
-
-
-
         p_reg      = fields_regs['p'].predict(     np.column_stack((kappa_test.ravel(), Aplus_test.ravel()))).reshape(kappa_test.shape)
         s_reg      = fields_regs['s'].predict(     np.column_stack((kappa_test.ravel(), Aplus_test.ravel()))).reshape(kappa_test.shape)
         mu1_reg    = fields_regs['mu1'].predict(   np.column_stack((kappa_test.ravel(), Aplus_test.ravel()))).reshape(kappa_test.shape)
@@ -307,10 +304,6 @@ if __name__ == "__main__":
         fields_regs = data['fields_regs']
         results = data['results']
         up_ref = data['up_ref']
-
-
-
-
 
         p_reg      = fields_regs['p'].predict(     np.column_stack((kappa_test.ravel(), B_test.ravel()))).reshape(kappa_test.shape)
         s_reg      = fields_regs['s'].predict(     np.column_stack((kappa_test.ravel(), B_test.ravel()))).reshape(kappa_test.shape)
