@@ -14,6 +14,7 @@ venv*/
 !tables/fixedpms_highre.csv
 !tables/fixedpms_classical.csv
 !tables/global_regression_coefficients.csv
+!results/*.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
