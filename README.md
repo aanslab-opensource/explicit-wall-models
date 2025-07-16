@@ -7,13 +7,15 @@
 This repository contains information and code to reproduce the results presented in the article
 ```bibtex
 @online{expwallmodinc2025,
-  title={Explicit Formulations of Widely-Used Wall Models for Large-Eddy Simulation ??},
+  title={Explicit formulations of widely used wall models for large‑eddy simulation},
   author={Nuca, Roberto and Mukha, Timofey and Parsani, Matteo},
   year={2025},
-  month={??},
-  eprint={2412.17117},
-  eprinttype={arxiv},
-  eprintclass={math.NA}
+  journal={Physics of Fluids},
+  volume={37},
+  number={3},
+  doi = {10.1063/5.0253882},
+  url = {https://doi.org/10.1063/5.0253882},
+  publisher={AIP Publishing}
 }
 ```
 
